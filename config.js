@@ -1,5 +1,5 @@
 const config = {
-	commandsFolder: './commands/'
+  commandsFolder: './commands/'
 }
 
 module.exports = config

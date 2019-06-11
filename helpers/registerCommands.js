@@ -1,22 +1,22 @@
 const config = require('../config')
 
 const registerCommands = commands => {
-	let obj = {}
-	const showVersion = cmd => console.log(`${cmd} version: ${obj[cmd].version}`)
+  let obj = {}
+  const showVersion = cmd => console.log(`${cmd} version: ${obj[cmd].version}`)
 
-	commands.forEach(command => {
-		obj[command] = {
-			...require(`../${config.commandsFolder}${command}`),
-			'--version': {
-				_cmd: () => showVersion(command)
-			},
-			'-v': {
-				_cmd: () => showVersion(command)
-			}
-		}
-	})
+  commands.forEach(command => {
+    obj[command] = {
+      ...require(`../${config.commandsFolder}${command}`),
+      '--version': {
+        _cmd: () => showVersion(command)
+      },
+      '-v': {
+        _cmd: () => showVersion(command)
+      }
+    }
+  })
 
-	return obj
+  return obj
 }
 
 module.exports = registerCommands
