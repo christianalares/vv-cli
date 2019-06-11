@@ -1,1 +1,3 @@
 # A CLI for Vinnovera
+
+It's a WIP...
