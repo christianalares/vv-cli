@@ -5,7 +5,10 @@ const harvest = new Harvest()
 const cmd = {
   version: 1,
   '--help': {
-    _cmd: harvest.help
+    _cmd: () => harvest.help()
+  },
+  '-h': {
+    _cmd: () => harvest.help()
   },
   auth: {
     _cmd: () => harvest.auth(),

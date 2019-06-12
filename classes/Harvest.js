@@ -27,9 +27,7 @@ const axios = require('axios')
 require('dotenv').config()
 
 const { HARVEST_CLIENT_ID, HARVEST_CLIENT_SECRET } = process.env
-const PORT = 3000
-
-console.log(22, PORT)
+const PORT = 1987
 
 class Harvest {
   constructor() {
@@ -59,7 +57,9 @@ class Harvest {
       this.code = req.query.code
       this.scope = req.query.scope
 
-      this.requestAuth()
+      setTimeout(() => {
+        this.requestAuth()
+      }, 2000)
 
       res.send('Thank you, you can now close this tab')
     })
@@ -96,7 +96,19 @@ class Harvest {
   }
 
   help() {
-    console.log('Harvest help')
+    console.log(`
+    ${chalk.bold(`vv harvest`)} <command>
+
+      ${chalk.dim('Commands:')}
+
+        auth              Authenticate your self to harvest
+        ls, list          Lists your harvest projects
+
+      
+      ${chalk.dim('Options:')}
+
+        -h, --help        Prints this dialog
+    `)
   }
 
   async auth() {
@@ -108,7 +120,10 @@ class Harvest {
 
     this.registerCallback()
     await this.listen()
-    this.spinner = ora("Yeah, I'll wait...").start()
+    this.spinner = ora({
+      text: "I'll just wait here...",
+      indent: 1
+    }).start()
   }
 
   resetAuth() {
