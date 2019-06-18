@@ -15,6 +15,25 @@ const cmd = {
     reset: {
       _cmd: () => harvest.resetAuth()
     }
+  },
+  unauth: {
+    _cmd: () => harvest.unAuth(),
+  },
+  whoami: {
+    _cmd: () => harvest.whoami(),
+  },
+  accounts: {
+    _cmd: () => harvest.accountsHelp(),
+    ls: {
+      _cmd: () => harvest.accountsList()
+    },
+    list: {
+      _cmd: () => harvest.accountsList()
+    },
+    set: {
+      _cmd: () => harvest.accountsSet()
+    }
   }
+
 }
 module.exports = cmd

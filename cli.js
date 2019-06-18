@@ -3,6 +3,12 @@ const registerCommands = require('./helpers/registerCommands')
 const { hasPath, path } = require('ramda')
 const commandsFolder = './commands/'
 
+const { vvDirExists, createVVDir } = require('./helpers/vvDir')
+
+if(!vvDirExists()) {
+  createVVDir()
+}
+
 getCommands(commandsFolder).then(commands => {
   const registeredCommands = registerCommands(commands)
   const input = process.argv.filter(arg => !arg.includes('/'))

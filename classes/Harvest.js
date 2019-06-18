@@ -1,26 +1,6 @@
-/* inquirer
-    .prompt([
-      {
-        type: 'input',
-        name: 'email',
-        message: 'Fill in your harvest email account:'
-      },
-      {
-        type: 'password',
-        name: 'password',
-        message: 'Fill in your harvest password:'
-      }
-    ])
-    .then(({ email, password }) => {
-      console.log({ email, password })
-    })
-    .catch(e => console.log(e))
-
-    const inquirer = require('inquirer')
-*/
-
 const express = require('express')
 const app = express()
+const inquirer = require('inquirer')
 const chalk = require('chalk')
 const ora = require('ora')
 const axios = require('axios')
@@ -37,41 +17,64 @@ class Harvest {
     this.scope = null
     this.spinner = null
     this.credentials = {}
+    this.user = null
+    this.accounts = null
+    this.chosenAccount = null
   }
 
-  listen() {
+  _listen() {
     return new Promise(resolve => {
       app.listen(PORT, () => resolve())
     })
   }
 
-  kill() {
-    setInterval(() => {
-      console.log(this.credentials)
-      process.exit(0)
-    }, 2000)
+  _errorOut(message, responseErrorMessage) {
+    this.spinner.fail(`${message}: ${responseErrorMessage}`)
+    this._kill()
   }
 
-  registerCallback() {
-    app.get('/harvestcallback', async (req, res) => {
+  _kill() {
+    process.exit(0)
+  }
+
+  _registerCallback() {
+    app.get('/harvestcallback', (req, res) => {
       this.code = req.query.code
       this.scope = req.query.scope
 
       setTimeout(() => {
-        this.requestAuth()
+        this._requestAuth()
       }, 2000)
 
       res.send('Thank you, you can now close this tab')
     })
   }
 
-  async requestAuth() {
+  async _getAccounts() {
+    try {
+      const { data: { user, accounts } } = await axios.get('https://id.getharvest.com/api/v2/accounts', {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.credentials.access_token}`
+        }
+      })
+  
+      return {
+        user,
+        accounts
+      }
+    } catch(error) {
+      this._errorOut('Could not get user', error.response.data.error_description)
+    }
+  }
+
+  async _requestAuth() {
     this.spinner
       .succeed('Thanks for submitting that form')
       .start('Just gotta fetch some tokens, hold on...')
 
     try {
-      const response = await axios.post('https://id.getharvest.com/api/v2/oauth2/token', {
+      const { data } = await axios.post('https://id.getharvest.com/api/v2/oauth2/token', {
         code: this.code,
         client_id: this.CLIENT_ID,
         client_secret: this.CLIENT_SECRET,
@@ -81,17 +84,22 @@ class Harvest {
         }
       })
 
-      const { data } = await response
       this.credentials = data
 
       this.spinner
         .succeed('I got the tokens')
         .start("Authentication went good, we're done here!")
         .succeed()
-      this.kill()
+
+      const { user, accounts } = await this._getAccounts()
+      this.user = user
+      this.accounts = accounts
+
+      console.log('Account data has been added:')
+      console.log(this.accounts)
+      this._kill()
     } catch (error) {
-      this.spinner.fail(`Sorry, authentication failed: ${error.response.data.error_description}`)
-      this.kill()
+      this._errorOut('Sorry, authentication failed', error.response.data.error_description)
     }
   }
 
@@ -118,16 +126,42 @@ class Harvest {
     console.log(chalk.blue('Go to the following URL to authenticate:'))
     console.log(authUrl)
 
-    this.registerCallback()
-    await this.listen()
+    this._registerCallback()
+    await this._listen()
     this.spinner = ora({
       text: "I'll just wait here...",
       indent: 1
     }).start()
   }
 
-  resetAuth() {
-    console.log('resetting auth')
+  unAuth() {
+    console.log('unauth!')
+  }
+
+  accountsHelp() {
+    console.log('accountsHelp')
+  }
+
+  accountsList() {
+    console.log(this.accounts)
+  }
+
+  async accountsSet() {
+    try {
+      const answer = await inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'chosenCccount',
+            message: 'Which account do you want to use?',
+            choices: accounts.map(account => account.name),
+          }
+        ])
+
+        this.chosenAccount = accounts.find(a => a.name === answer.chosenCccount)
+    } catch(error) {
+      this._errorOut('Failed to choose account', error)
+    }
   }
 }
 
