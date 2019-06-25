@@ -17,13 +17,19 @@ const cmd = {
     }
   },
   unauth: {
-    _cmd: () => harvest.unAuth(),
+    _cmd: () => harvest.unAuth()
   },
   whoami: {
-    _cmd: () => harvest.whoami(),
+    _cmd: () => harvest.whoami()
   },
   accounts: {
-    _cmd: () => harvest.accountsHelp(),
+    _cmd: () => harvest.accountsNoCommand(),
+    '--help': {
+      _cmd: () => harvest.accountsHelp()
+    },
+    '-h': {
+      _cmd: () => harvest.accountsHelp()
+    },
     ls: {
       _cmd: () => harvest.accountsList()
     },
@@ -34,6 +40,5 @@ const cmd = {
       _cmd: () => harvest.accountsSet()
     }
   }
-
 }
 module.exports = cmd

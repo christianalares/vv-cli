@@ -4,6 +4,9 @@ const inquirer = require('inquirer')
 const chalk = require('chalk')
 const ora = require('ora')
 const axios = require('axios')
+const table = require('text-table')
+const config = require('../config')
+const { updateCommandFile, readCommandFile } = require('../helpers/vvDir')
 require('dotenv').config()
 
 const { HARVEST_CLIENT_ID, HARVEST_CLIENT_SECRET } = process.env
@@ -11,12 +14,12 @@ const PORT = 1987
 
 class Harvest {
   constructor() {
+    this.commandName = 'harvest'
     this.CLIENT_ID = HARVEST_CLIENT_ID
     this.CLIENT_SECRET = HARVEST_CLIENT_SECRET
     this.code = null
-    this.scope = null
+    this.credentials = null
     this.spinner = null
-    this.credentials = {}
     this.user = null
     this.accounts = null
     this.chosenAccount = null
@@ -28,8 +31,17 @@ class Harvest {
     })
   }
 
-  _errorOut(message, responseErrorMessage) {
-    this.spinner.fail(`${message}: ${responseErrorMessage}`)
+  _errorOut(message, responseErrorMessage = '') {
+    if (!this.spinner) {
+      this.spinner = ora({
+        text: message,
+        indent: 1
+      })
+        .start()
+        .fail()
+    } else {
+      this.spinner.fail(`${message}: ${responseErrorMessage}`)
+    }
     this._kill()
   }
 
@@ -40,7 +52,6 @@ class Harvest {
   _registerCallback() {
     app.get('/harvestcallback', (req, res) => {
       this.code = req.query.code
-      this.scope = req.query.scope
 
       setTimeout(() => {
         this._requestAuth()
@@ -52,19 +63,22 @@ class Harvest {
 
   async _getAccounts() {
     try {
-      const { data: { user, accounts } } = await axios.get('https://id.getharvest.com/api/v2/accounts', {
+      const {
+        data: { user, accounts }
+      } = await axios.get('https://id.getharvest.com/api/v2/accounts', {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.credentials.access_token}`
         }
       })
-  
+
       return {
         user,
         accounts
       }
-    } catch(error) {
-      this._errorOut('Could not get user', error.response.data.error_description)
+    } catch (error) {
+      console.log('_getAccounts', error)
+      // this._errorOut('Could not get user', error.response.data.error_description)
     }
   }
 
@@ -74,17 +88,20 @@ class Harvest {
       .start('Just gotta fetch some tokens, hold on...')
 
     try {
-      const { data } = await axios.post('https://id.getharvest.com/api/v2/oauth2/token', {
-        code: this.code,
-        client_id: this.CLIENT_ID,
-        client_secret: this.CLIENT_SECRET,
-        grant_type: 'authorization_code',
-        headers: {
-          'Content-Type': 'application/json'
+      const { data: credentials } = await axios.post(
+        'https://id.getharvest.com/api/v2/oauth2/token',
+        {
+          code: this.code,
+          client_id: this.CLIENT_ID,
+          client_secret: this.CLIENT_SECRET,
+          grant_type: 'authorization_code',
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
-      })
+      )
 
-      this.credentials = data
+      this.credentials = credentials
 
       this.spinner
         .succeed('I got the tokens')
@@ -92,14 +109,18 @@ class Harvest {
         .succeed()
 
       const { user, accounts } = await this._getAccounts()
-      this.user = user
-      this.accounts = accounts
 
-      console.log('Account data has been added:')
-      console.log(this.accounts)
+      updateCommandFile(this.commandName, {
+        credentials,
+        user,
+        accounts
+      })
+
+      console.log(chalk.bold('Account and user data has been added'))
       this._kill()
     } catch (error) {
-      this._errorOut('Sorry, authentication failed', error.response.data.error_description)
+      console.log('_requestAuth', error)
+      // this._errorOut('Sorry, authentication failed', error.response.data.error_description)
     }
   }
 
@@ -110,6 +131,7 @@ class Harvest {
       ${chalk.dim('Commands:')}
 
         auth              Authenticate your self to harvest
+        accounts          Lists your harvest accounts
         ls, list          Lists your harvest projects
 
       
@@ -138,28 +160,77 @@ class Harvest {
     console.log('unauth!')
   }
 
+  accountsNoCommand() {
+    console.log(`Invalid command, run ${chalk.bold('vv harvest accounts --help')} for more info`)
+  }
+
   accountsHelp() {
     console.log('accountsHelp')
   }
 
   accountsList() {
-    console.log(this.accounts)
+    const accounts = readCommandFile(this.commandName).accounts
+    if (!accounts) {
+      this._errorOut("You don't seem to have any accounts on your user")
+    }
+
+    // prettier-ignore
+    console.log(
+      `${table([
+        ['name', 'product', '# id'],
+        ...accounts.map(acc => [acc.name, acc.product, acc.id])
+      ],
+      { align: ['l', 'l', 'r'] }
+      )}`
+    )
   }
 
   async accountsSet() {
-    try {
-      const answer = await inquirer
-        .prompt([
-          {
-            type: 'list',
-            name: 'chosenCccount',
-            message: 'Which account do you want to use?',
-            choices: accounts.map(account => account.name),
-          }
-        ])
+    const accounts = readCommandFile(this.commandName).accounts
 
-        this.chosenAccount = accounts.find(a => a.name === answer.chosenCccount)
-    } catch(error) {
+    if (typeof accounts === 'undefined') {
+      console.log(chalk.bold('Could not find any accounts on your user'))
+      this._kill()
+    }
+
+    if (accounts.length === 0) {
+      console.log(chalk.bold("You don't seem to have any accounts on your user"))
+      this._kill()
+    }
+
+    if (accounts.length === 1) {
+      console.log(`
+  You only have one account. Setting ${chalk.yellow(accounts[0].name)} to chosen account.
+  Type ${chalk.bold('vv harvest accounts ls')} for more details about that account.`)
+
+      updateCommandFile(this.commandName, {
+        chosenAccount: accounts[0]
+      })
+
+      this._kill()
+    }
+
+    try {
+      const answer = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'chosenAccount',
+          message: 'Which account do you want to use?',
+          choices: accounts.map(account => account.name)
+        }
+      ])
+
+      const chosenAccount = accounts.find(a => a.name === answer.chosenAccount)
+
+      console.log(`
+  ${chalk.yellow(chosenAccount.name)} has been set to chosen account.
+  Type ${chalk.bold('vv harvest accounts ls')} for more details about your accounts.`)
+
+      updateCommandFile(this.commandName, {
+        chosenAccount
+      })
+    } catch (error) {
+      console.log(error)
       this._errorOut('Failed to choose account', error)
     }
   }

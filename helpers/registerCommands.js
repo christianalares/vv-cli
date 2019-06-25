@@ -6,7 +6,7 @@ const registerCommands = commands => {
 
   commands.forEach(command => {
     obj[command] = {
-      ...require(`../${config.commandsFolder}${command}`),
+      ...require(`../${config.COMMANDS_FOLDER}/${command}`),
       '--version': {
         _cmd: () => showVersion(command)
       },

@@ -1,15 +1,19 @@
+const config = require('./config')
 const getCommands = require('./helpers/getCommands')
 const registerCommands = require('./helpers/registerCommands')
 const { hasPath, path } = require('ramda')
-const commandsFolder = './commands/'
 
-const { vvDirExists, createVVDir } = require('./helpers/vvDir')
+const { vvDirExists, createVVDir, checkCommandConfigFiles } = require('./helpers/vvDir')
 
-if(!vvDirExists()) {
-  createVVDir()
+const checkFileSystem = commands => {
+  if (!vvDirExists()) {
+    createVVDir()
+  }
+  checkCommandConfigFiles(commands)
 }
 
-getCommands(commandsFolder).then(commands => {
+getCommands(config.COMMANDS_FOLDER).then(commands => {
+  checkFileSystem(commands)
   const registeredCommands = registerCommands(commands)
   const input = process.argv.filter(arg => !arg.includes('/'))
   const [baseCommand, ...rest] = input
