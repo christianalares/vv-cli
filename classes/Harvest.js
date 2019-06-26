@@ -12,6 +12,10 @@ require('dotenv').config()
 const { HARVEST_CLIENT_ID, HARVEST_CLIENT_SECRET } = process.env
 const PORT = 1987
 
+// function strlen(str) {
+//   return str.replace(/\u001b[^m]*m/g, '').length
+// }
+
 class Harvest {
   constructor() {
     this.commandName = 'harvest'
@@ -176,12 +180,17 @@ class Harvest {
 
     // prettier-ignore
     console.log(
-      `${table([
-        ['name', 'product', '# id'],
-        ...accounts.map(acc => [acc.name, acc.product, acc.id])
-      ],
-      { align: ['l', 'l', 'r'] }
-      )}`
+      `\n${table(
+        [
+          ['name', 'product', '# id'].map(s => chalk.dim(s)),
+          ...accounts.map(acc => [acc.name, acc.product, acc.id])
+        ],
+        {
+          align: ['l', 'l', 'r'],
+          hsep: ' '.repeat(8),
+          stringLength: (str) => str.replace(/\u001b[^m]*m/g, '').length
+        }
+      ).replace(/^/gm, '  ')}`
     )
   }
 
