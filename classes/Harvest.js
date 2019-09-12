@@ -9,7 +9,8 @@ const config = require('../config')
 const { updateCommandFile, readCommandFile } = require('../helpers/vvDir')
 require('dotenv').config()
 
-const { HARVEST_CLIENT_ID, HARVEST_CLIENT_SECRET } = process.env
+const { HARVEST_CLIENT_SECRET } = process.env
+const HARVEST_CLIENT_ID = 'Zh4LGEEj1eXX61kayE65edg5'
 const PORT = 1987
 
 // function strlen(str) {
@@ -56,6 +57,8 @@ class Harvest {
   _registerCallback() {
     app.get('/harvestcallback', (req, res) => {
       this.code = req.query.code
+
+      console.log(111, req.query)
 
       setTimeout(() => {
         this._requestAuth()
