@@ -13,6 +13,9 @@ const cmd = {
   _cmd: hello,
   '--help': {
     _cmd: help
+  },
+  '-h': {
+    _cmd: help
   }
 }
 module.exports = cmd
