@@ -1,9 +1,11 @@
 const config = require('./config')
-const getCommands = require('./helpers/getCommands')
-const registerCommands = require('./helpers/registerCommands')
+const getCommands = require('./utils/getCommands')
+const registerCommands = require('./utils/registerCommands')
+const { shouldShowHelp, showHelp } = require('./utils/help')
+const { shouldShowVersion, showVersion } = require('./utils/version')
 const { hasPath, path } = require('ramda')
 
-const { vvDirExists, createVVDir, checkCommandConfigFiles } = require('./helpers/vvDir')
+const { vvDirExists, createVVDir, checkCommandConfigFiles } = require('./utils/vvDir')
 
 const checkFileSystem = commands => {
   if (!vvDirExists()) {
@@ -21,6 +23,10 @@ getCommands(config.COMMANDS_FOLDER).then(commands => {
 
   if (hasPath(rest, foundCommand)) {
     path(rest, foundCommand)['_cmd']()
+  } else if (shouldShowVersion(input)) {
+    showVersion()
+  } else if (shouldShowHelp(input)) {
+    showHelp(registeredCommands)
   } else {
     console.log(`Invalid command: ${rest.join(' ')}`)
   }

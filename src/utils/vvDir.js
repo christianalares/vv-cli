@@ -12,7 +12,7 @@ const dirExists = path => {
   }
 }
 
-const fileExists = (fullPath, filename) => {
+const fileExists = fullPath => {
   try {
     return fs.existsSync(fullPath)
   } catch (error) {

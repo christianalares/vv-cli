@@ -1,9 +1,0 @@
-{
-  "version": 1,
-  "name": "vv-cli",
-  "alias": "vv-cli",
-  "env": {
-    "HARVEST_CLIENT_ID": "@harvest_client_id",
-    "HARVEST_CLIENT_SECRET": "@harvest_client_secret"
-  }
-}

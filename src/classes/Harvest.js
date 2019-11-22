@@ -5,8 +5,7 @@ const chalk = require('chalk')
 const ora = require('ora')
 const axios = require('axios')
 const table = require('text-table')
-const config = require('../config')
-const { updateCommandFile, readCommandFile } = require('../helpers/vvDir')
+const { updateCommandFile, readCommandFile } = require('../utils/vvDir')
 require('dotenv').config()
 
 const { HARVEST_CLIENT_SECRET } = process.env
@@ -149,9 +148,7 @@ class Harvest {
   }
 
   async auth() {
-    const authUrl = `https://id.getharvest.com/oauth2/authorize?client_id=${
-      this.CLIENT_ID
-    }&response_type=code`
+    const authUrl = `https://id.getharvest.com/oauth2/authorize?client_id=${this.CLIENT_ID}&response_type=code`
     console.log(chalk.blue('Go to the following URL to authenticate:'))
     console.log(authUrl)
 
@@ -181,6 +178,7 @@ class Harvest {
       this._errorOut("You don't seem to have any accounts on your user")
     }
 
+    /* eslint-disable no-control-regex */
     // prettier-ignore
     console.log(
       `\n${table(
@@ -194,6 +192,7 @@ class Harvest {
           stringLength: (str) => str.replace(/\u001b[^m]*m/g, '').length
         }
       ).replace(/^/gm, '  ')}`
+      /* eslint-enable no-control-regex */
     )
   }
 

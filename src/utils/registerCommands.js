@@ -1,7 +1,7 @@
 const config = require('../config')
 
 const registerCommands = commands => {
-  let obj = {}
+  const obj = {}
   const showVersion = cmd => console.log(`${cmd} version: ${obj[cmd].version}`)
 
   commands.forEach(command => {
