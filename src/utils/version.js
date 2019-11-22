@@ -67,7 +67,12 @@ const shouldShowVersion = input => {
   return showVersion
 }
 
+const showVersion = () => {
+  console.log(currentVersion)
+}
+
 module.exports = {
   notifyUpgradeIfAvailable,
-  shouldShowVersion
+  shouldShowVersion,
+  showVersion
 }

@@ -1,6 +1,6 @@
 {
   "name": "vinnovera-cli",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A CLI tool for the people that works at Vinnovera",
   "main": "./src/index.js",
   "bin": {
