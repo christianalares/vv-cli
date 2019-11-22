@@ -1,6 +1,6 @@
 {
   "name": "vinnovera-cli",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A CLI tool for the people that works at Vinnovera",
   "main": "./src/index.js",
   "bin": {
@@ -33,6 +33,7 @@
     "inquirer": "^6.3.1",
     "ora": "^3.4.0",
     "os": "^0.1.1",
+    "print-message": "^3.0.1",
     "ramda": "^0.26.1",
     "text-table": "^0.2.0"
   },

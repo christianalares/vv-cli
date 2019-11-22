@@ -3,7 +3,7 @@ const config = require('./config')
 const getCommands = require('./utils/getCommands')
 const registerCommands = require('./utils/registerCommands')
 const { shouldShowHelp, showHelp } = require('./utils/help')
-const { shouldShowVersion, showVersion } = require('./utils/version')
+const { notifyUpgradeIfAvailable } = require('./utils/version')
 const { hasPath, path } = require('ramda')
 
 const { vvDirExists, createVVDir, checkCommandConfigFiles } = require('./utils/vvDir')
@@ -15,6 +15,8 @@ const checkFileSystem = commands => {
   checkCommandConfigFiles(commands)
 }
 
+notifyUpgradeIfAvailable()
+
 getCommands(config.COMMANDS_FOLDER).then(commands => {
   checkFileSystem(commands)
   const registeredCommands = registerCommands(commands)
@@ -24,8 +26,8 @@ getCommands(config.COMMANDS_FOLDER).then(commands => {
 
   if (hasPath(rest, foundCommand)) {
     path(rest, foundCommand)['_cmd']()
-  } else if (shouldShowVersion(input)) {
-    showVersion()
+  } else if (rest.length === 0 && foundCommand) {
+    foundCommand['_cmd']()
   } else if (shouldShowHelp(input)) {
     showHelp(registeredCommands)
   } else {
