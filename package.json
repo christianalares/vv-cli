@@ -1,8 +1,12 @@
 {
-  "name": "vv-cli",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "vinnovera-cli",
+  "version": "0.0.3",
+  "description": "A CLI tool for the people that works at Vinnovera",
+  "main": "./src/index.js",
+  "bin": {
+    "vv": "./src/index.js"
+  },
+  "preferGlobal": true,
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -16,11 +20,12 @@
   "scripts": {
     "lint": "eslint '**/*.js' --ignore-path .gitignore",
     "dev": "nodemon index.js",
+    "build": "webpack",
     "start": "node index.js"
   },
   "keywords": [],
   "author": "Christian Alares",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "axios": "^0.18.1",
     "chalk": "^2.4.2",

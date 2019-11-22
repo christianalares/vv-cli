@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const config = require('./config')
 const getCommands = require('./utils/getCommands')
 const registerCommands = require('./utils/registerCommands')
