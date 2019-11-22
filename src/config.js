@@ -2,7 +2,7 @@ const path = require('path')
 const { homedir } = require('os')
 
 const config = {
-  COMMANDS_FOLDER: './commands',
+  COMMANDS_FOLDER: path.resolve(__dirname, 'commands'),
   CONFIG_FILENAME: 'config.txt',
   VV_DIR: path.resolve(homedir(), '.vv'),
   DIMMED_COLOR: [255, 0, 0]

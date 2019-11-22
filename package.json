@@ -20,7 +20,6 @@
   "scripts": {
     "lint": "eslint '**/*.js' --ignore-path .gitignore",
     "dev": "nodemon index.js",
-    "build": "webpack",
     "start": "node index.js"
   },
   "keywords": [],
